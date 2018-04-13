@@ -4,6 +4,8 @@ from torch.autograd import Variable
 import torch.optim as optim
 import argparse
 from model import Generator, Discriminator
+from tensorboardX import SummaryWriter
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("type", default="DCGAN",help="Options to choose from DCGAN, WGAN, WGAN+GP, LSGAN")
@@ -15,20 +17,23 @@ parser.add_argument("epochs",default=2, help="Number of epochs to Train")
 args = parser.parse_args()
 print(args.type)
 
+args={'batch_size':64,'image_size':img_size,"is_cuda":False,"NUM_OF_EPOCHS":2,"lr":1e-3}
+
+writer = SummaryWriter()
 batch_size=64#args.batch_size
-img_size = 128#args.image_size
+img_size = 64#args.image_size
 is_cuda=False#args.is_cuda
 NUM_OF_EPOCHS=2#args.epochs
 lr=1e-3#args.lr
 #Load Data
 transform = transforms.Compose([
-        transforms.Scale(img_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+		transforms.Scale(img_size),
+		transforms.ToTensor(),
+		transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
 ])
 train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('data', train=True, download=True, transform=transform),
-    batch_size=batch_size, shuffle=True)
+	datasets.MNIST('data', train=True, download=True, transform=transform),
+	batch_size=batch_size, shuffle=True)
 
 #Load Models
 if not is_cuda:
@@ -45,6 +50,22 @@ G_optimizer = optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
 D_optimizer = optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999))
 
 for epoch in range(NUM_OF_EPOCHS):
-	train_discriminator(D,G,train_loader,D_optimizer,args)
+	for batch,labels in tqdm.tqdm(train_loader):
+		z_ = torch.randn((batch_size, 100)).view(-1, 100, 1, 1)
+		#train_real
+		if is_cuda:
+			real_batch,noise=V(batch.cuda()),V(z_.cuda())
+		else:
+			real_batch,noise=V(batch),V(z_)	
+
+		data={}
+		data['real_batch']=real_batch
+		data['noise']=noise	
+		args['epoch']=epoch
+		train_discriminator(D,G,data,D_optimizer,args,writer)
+		train_generator(D,G,data,G_optimizer,args,writer)
+
+
+
 
 

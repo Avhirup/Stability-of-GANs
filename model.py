@@ -1,11 +1,11 @@
-                                                                                                import torch 
-                                                                                                import torch.nn as nn
-                                                                                                from torch.autograd import Variable
-                                                                                                import torchvision.datasets as dset
-                                                                                                import torch.optim as optim
-                                                                                                import torchvision.utils as vutils
-                                                                                                import torchvision.transforms as transforms
-                                                                                                import torch.nn.functional as F
+import torch 
+import torch.nn as nn
+from torch.autograd import Variable
+import torchvision.datasets as dset
+import torch.optim as optim
+import torchvision.utils as vutils
+import torchvision.transforms as transforms
+import torch.nn.functional as F
 # G(z)
 
 class Generator(nn.Module):
@@ -50,7 +50,6 @@ class Discriminator(nn.Module):
         self.conv4 = nn.Conv2d(d*4, d*8, 4, 2, 1)
         self.conv4_bn = nn.BatchNorm2d(d*8)
         self.conv5 = nn.Conv2d(d*8, 1, 4, 1, 0)
-        self.fc=nn.Linear(25,1)
     # weight_init
     def weight_init(self, mean, std):
         for m in self._modules:
@@ -63,8 +62,6 @@ class Discriminator(nn.Module):
         x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
         x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
         x = F.sigmoid(self.conv5(x))
-        x=x.view(x.size()[0],-1)
-        x=self.fc(x)
         return x
 
 
