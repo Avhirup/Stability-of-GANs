@@ -3,6 +3,7 @@ import tqdm
 from torch.autograd import Variable as V
 import torch.nn.functional as F
 import torch 
+import random
 def reset_grad(M):
 	if not isinstance(M,list):
 		M=[M]
@@ -10,15 +11,16 @@ def reset_grad(M):
 		m.zero_grad()
 
 def train_DCGAN_discriminator(D,G,data,D_optimizer,args,writer):
-	y_real_ = V(torch.ones(args.batch_size))
-	y_fake_ = V(torch.zeros(args.batch_size))
+	y_real_ = V(torch.ones(data['real_batch'].size()[0]))
+	y_fake_ = V(torch.zeros(data['noise'].size()[0]))
 	BCE_loss=nn.BCELoss()
 	if args.is_cuda:
 		y_real_,y_fake_=y_real_.cuda(),y_fake_.cuda()
 	D_real_loss=BCE_loss(F.sigmoid(D(data['real_batch']).squeeze()),y_real_)
 	G_result=G(data['noise'])
+	# print ("D_real_loss",D_real_loss)
 	D_fake_loss=BCE_loss(F.sigmoid(D(G_result).squeeze()),y_fake_)
-
+	# print ("D_fake_loss",D_fake_loss)
 	D_loss=D_real_loss+D_fake_loss
 	D_loss.backward()
 	D_optimizer.step()
@@ -28,11 +30,12 @@ def train_DCGAN_discriminator(D,G,data,D_optimizer,args,writer):
 
 def train_DCGAN_generator(D,G,data,G_optimizer,args,writer):
 	BCE_loss=nn.BCELoss()
-	y_real_ = V(torch.ones(args.batch_size))
+	y_real_ = V(torch.ones(data['noise'].size()[0]))
 	if args.is_cuda:
 		y_real_=y_real_.cuda()
 	G_result=G(data['noise'])
 	G_loss=BCE_loss(F.sigmoid(D(G_result).squeeze()),y_real_)
+	# print ("G_real_loss",G_loss)
 	G_loss.backward()
 	G_optimizer.step()
 	reset_grad([D,G])
@@ -46,11 +49,14 @@ def train_WGAN_discriminator(D,G,data,D_optimizer,args,writer):
 		real_embed=D(data['real_batch'])
 		G_result=G(data['noise'])
 		fake_embed=D(G_result)
-		Penalty=V(torch.zeros(1))
+		if args.is_cuda:
+			Penalty=V(torch.zeros(1)).cuda()
+		else:
+			Penalty=V(torch.zeros(1))
 
 		if args.is_GP:
 			alpha=random.random()
-			x_hat = (alpha*G_result+(1-alpha)*V(data['real_batch'])).detach()
+			x_hat = (alpha*G_result+(1-alpha)*data['real_batch']).detach()
 			x_hat.requires_grad = True
 			loss_D = D(x_hat).sum()
 			loss_D.backward()
@@ -129,8 +135,11 @@ def train_generator(D,G,data,G_optimizer,args,writer,type="DCGAN"):
 		print("Implementation Remaining")
 		pass
 
-def validate(G,writer,epoch,type='DCGAN'):
+def validate(G,writer,epoch,args,type='DCGAN'):
 	z_ = torch.randn((5, 100)).view(-1, 100, 1, 1)
-	G_result=G(V(z_))
+	if args.is_cuda:
+		G_result=G(V(z_).cuda())
+	else:
+		G_result=G(V(z_))
 	writer.add_image("GeneratedImage/"+type,G_result,epoch)
 

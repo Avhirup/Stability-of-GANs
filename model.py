@@ -40,7 +40,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
     # initializers
-    def __init__(self, d=128):
+    def __init__(self, d=16):
         super(Discriminator, self).__init__()
         self.conv1 = nn.Conv2d(1, d, 4, 2, 1)
         self.conv2 = nn.Conv2d(d, d*2, 4, 2, 1)
@@ -61,7 +61,7 @@ class Discriminator(nn.Module):
         x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
         x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
         x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
-        x = F.sigmoid(self.conv5(x))
+        x = self.conv5(x)
         return x
 
 

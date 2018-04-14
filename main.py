@@ -10,12 +10,12 @@ import tqdm
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("type", default="DCGAN",help="Options to choose from DCGAN, WGAN, WGAN+GP, LSGAN",type=str)
+parser.add_argument("-type", default="DCGAN",help="Options to choose from DCGAN, WGAN, WGAN+GP, LSGAN",type=str)
 parser.add_argument("-image_size",default=64, help="Image size",type=int)
-parser.add_argument("-is_cuda",default=False, help="Is graphic card present?",type=bool)
+parser.add_argument("-is_cuda",default=True, help="Is graphic card present?",type=bool)
 parser.add_argument("-batch_size",default=64, help="batch_size",type=int)
-parser.add_argument("epochs",default=2, help="Number of epochs to Train",type=int)
-parser.add_argument("-lr",default=1e-4, help="learning_rate",type=float)
+parser.add_argument("-epochs",default=10, help="Number of epochs to Train",type=int)
+parser.add_argument("-lr",default=2e-4, help="learning_rate",type=float)
 parser.add_argument("-LAMBDA",default=1e-3, help="lambda",type=float)
 parser.add_argument("-is_GP",default=False, help="To use Gradient Penalty",type=bool)
 parser.add_argument("-n_critic",default=3, help="number of critic iterations per Generator iterations",type=int)
@@ -49,17 +49,17 @@ else:
 	G=Generator().cuda()
 	D=Discriminator().cuda()
 
-G.weight_init(0,0.02)
-D.weight_init(0,0.02)
+# G.weight_init(0,0.02)
+# D.weight_init(0,0.02)
 
-G_optimizer = optim.Adam(G.parameters(), lr=1e-6)
-D_optimizer = optim.Adam(D.parameters(), lr=lr)
+G_optimizer = optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
+D_optimizer = optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999))
 
 for epoch in range(NUM_OF_EPOCHS):
 	ind=0
 	l=len(train_loader)
 	for batch,labels in tqdm.tqdm(train_loader):
-		z_ = torch.randn((batch_size, 100)).view(-1, 100, 1, 1)
+		z_ = torch.randn((batch.size()[0], 100)).view(-1, 100, 1, 1)
 		#train_real
 		if is_cuda:
 			real_batch,noise=V(batch.cuda()),V(z_.cuda())
@@ -68,12 +68,14 @@ for epoch in range(NUM_OF_EPOCHS):
 		data={}
 		data['real_batch']=real_batch
 		data['noise']=noise	
+		# break
 		args.epoch=epoch*l+ind
 		ind=ind+1
-		train_discriminator(D,G,data,D_optimizer,args,writer)
-		train_generator(D,G,data,G_optimizer,args,writer)
-	if epoch%10==0:
-		validate(G,writer,epoch)	
+		train_discriminator(D,G,data,D_optimizer,args,writer,args.type)
+		train_generator(D,G,data,G_optimizer,args,writer,args.type)
+	# break
+	if epoch%1==0:
+		validate(G,writer,epoch,args,args.type)	
 
 
 
