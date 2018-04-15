@@ -18,7 +18,7 @@ parser.add_argument("-epochs",default=10, help="Number of epochs to Train",type=
 parser.add_argument("-lr",default=2e-4, help="learning_rate",type=float)
 parser.add_argument("-LAMBDA",default=1e-3, help="lambda",type=float)
 parser.add_argument("-is_GP",default=False, help="To use Gradient Penalty",type=bool)
-parser.add_argument("-n_critic",default=3, help="number of critic iterations per Generator iterations",type=int)
+parser.add_argument("-n_critic",default=5, help="number of critic iterations per Generator iterations",type=int)
 parser.add_argument("-clamp_upper",default=1e-2, help="weight clipping upper limit",type=float)
 parser.add_argument("-clamp_lower",default=-1e-2, help="weight clipping lower limit",type=float)
 
@@ -49,8 +49,8 @@ else:
 	G=Generator().cuda()
 	D=Discriminator().cuda()
 
-# G.weight_init(0,0.02)
-# D.weight_init(0,0.02)
+G.weight_init(0,0.02)
+D.weight_init(0,0.02)
 
 G_optimizer = optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
 D_optimizer = optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999))

@@ -16,10 +16,10 @@ def train_DCGAN_discriminator(D,G,data,D_optimizer,args,writer):
 	BCE_loss=nn.BCELoss()
 	if args.is_cuda:
 		y_real_,y_fake_=y_real_.cuda(),y_fake_.cuda()
-	D_real_loss=BCE_loss(F.sigmoid(D(data['real_batch']).squeeze()),y_real_)
+	D_real_loss=BCE_loss(D(data['real_batch']).squeeze(),y_real_)
 	G_result=G(data['noise'])
 	# print ("D_real_loss",D_real_loss)
-	D_fake_loss=BCE_loss(F.sigmoid(D(G_result).squeeze()),y_fake_)
+	D_fake_loss=BCE_loss(D(G_result).squeeze(),y_fake_)
 	# print ("D_fake_loss",D_fake_loss)
 	D_loss=D_real_loss+D_fake_loss
 	D_loss.backward()
@@ -34,7 +34,7 @@ def train_DCGAN_generator(D,G,data,G_optimizer,args,writer):
 	if args.is_cuda:
 		y_real_=y_real_.cuda()
 	G_result=G(data['noise'])
-	G_loss=BCE_loss(F.sigmoid(D(G_result).squeeze()),y_real_)
+	G_loss=BCE_loss(D(G_result).squeeze(),y_real_)
 	# print ("G_real_loss",G_loss)
 	G_loss.backward()
 	G_optimizer.step()
@@ -46,9 +46,9 @@ def train_DCGAN_generator(D,G,data,G_optimizer,args,writer):
 
 def train_WGAN_discriminator(D,G,data,D_optimizer,args,writer):
 	for critic_repetitions in range(args.n_critic):
-		real_embed=D(data['real_batch'])
+		real_embed=D(data['real_batch']).mean()
 		G_result=G(data['noise'])
-		fake_embed=D(G_result)
+		fake_embed=D(G_result).mean()
 		if args.is_cuda:
 			Penalty=V(torch.zeros(1)).cuda()
 		else:
@@ -63,14 +63,14 @@ def train_WGAN_discriminator(D,G,data,D_optimizer,args,writer):
 			x_hat.grad.volatile = False			
 			Penalty=((x_hat.grad -1)**2 * args.LAMBDA).mean()
 
-		D_loss=(real_embed-fake_embed).mean()+Penalty
+		D_loss=-(real_embed-fake_embed).mean()+Penalty
 		D_loss.backward()
 		D_optimizer.step()
-		reset_grad([D,G])
 		if not args.is_GP:
 			for p in D.parameters():
 				p.data.clamp_(args.clamp_lower,args.clamp_upper)
 
+		reset_grad([D,G])
 		writer.add_scalar("Discriminator/Error",D_loss,args.epoch)
 		writer.export_scalars_to_json("./all_scalars.json")
 
