@@ -29,7 +29,7 @@ img_size = args.image_size
 is_cuda=args.is_cuda
 NUM_OF_EPOCHS=args.epochs
 lr=args.lr
-print (args.type,batch_size,img_size,is_cuda,NUM_OF_EPOCHS,lr)
+print (args.type,batch_size,img_size,is_cuda,NUM_OF_EPOCHS,lr,args.LAMBDA)
 #Load Data
 print ("--------------------------------",img_size)
 transform = transforms.Compose([

@@ -61,7 +61,7 @@ def train_WGAN_discriminator(D,G,data,D_optimizer,args,writer):
 			loss_D = D(x_hat).sum()
 			loss_D.backward()
 			x_hat.grad.volatile = False			
-			Penalty=((x_hat.grad -1)**2 * args.LAMBDA).mean()
+			Penalty=(((x_hat.grad -1)**2 ).mean())* args.LAMBDA
 
 		D_loss=-(real_embed-fake_embed).mean()+Penalty
 		D_loss.backward()
@@ -92,7 +92,7 @@ def train_LSGAN_discriminator(D,G,data,D_optimizer,args,writer):
 	G_result=G(data['noise'])
 	fake_embed=D(G_result)
 
-	D_loss=args.LAMBDA*((real_embed-1)**2).mean()+((fake_embed)**2).mean()
+	D_loss=((real_embed-1)**2).mean()+args.LAMBDA*((fake_embed)**2).mean()
 	D_loss.backward()
 	D_optimizer.step()
 	reset_grad([D,G])
@@ -104,7 +104,7 @@ def train_LSGAN_discriminator(D,G,data,D_optimizer,args,writer):
 def train_LSGAN_generator(D,G,data,G_optimizer,args,writer):
 	G_result=G(data['noise'])
 	fake_embed=D(G_result)
-	G_loss=args.LAMBDA*args.LAMBDA*((fake_embed-1)**2).mean()
+	G_loss=args.LAMBDA*((fake_embed-1)**2).mean()
 	G_loss.backward()
 	G_optimizer.step()
 	reset_grad([D,G])
