@@ -58,7 +58,8 @@ def train_WGAN_discriminator(D,G,data,D_optimizer,args,writer):
 			alpha=random.random()
 			x_hat = (alpha*G_result+(1-alpha)*data['real_batch']).detach()
 			x_hat.requires_grad = True
-			loss_D = D(x_hat).sum()
+			# loss_D = D(x_hat).sum()
+			loss_D = D(x_hat).mean()
 			loss_D.backward()
 			x_hat.grad.volatile = False			
 			Penalty=(((x_hat.grad -1)**2 ).mean())* args.LAMBDA
