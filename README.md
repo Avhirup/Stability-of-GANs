@@ -15,12 +15,12 @@ CUDA_VISIBLE_DEVICES=1 python main.py -type "WGAN" -epochs 100 -is_cuda True -lr
 
 ## Results
 ### Wassertein GAN(WGAN)
-![](assets/Screenshot from 2018-04-19 16:27:03.png)
-![](assets/Screenshot from 2018-04-19 16:27:26.png)
-![](assets/Screenshot from 2018-04-19 16:27:17.png)
-![](assets/Screenshot from 2018-04-19 16:26:21.png)
+![](assets/2.png)
+![](assets/3.png)
+![](assets/4.png)
+![](assets/1.png)
 ### LSGAN 
-![](assets/Screenshot from 2018-04-19 16:28:17.png)
+![](assets/5.png)
 ### DCGAN 
-![](assets/Screenshot from 2018-04-19 16:29:15.png)
-![](assets/Screenshot from 2018-04-19 16:29:35.png)
+![](assets/8.png)
+![](assets/9.png)
