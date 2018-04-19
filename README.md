@@ -4,12 +4,12 @@ The following repository contains Pytorch implemenations of Generative Adversari
 
 # Types of GANs
 
-[x]Deconvolutional GAN(DCGAN)
-[x]Loss Sensitive GAN(LSGAN)
-[x]Wassertein GAN(WGAN)
-[x]Wassertein GAN with Gradient Penalty()
-[ ]Energy GAN
-[ ]Evolutionary GAN
+[x] Deconvolutional GAN(DCGAN)
+[x] Loss Sensitive GAN(LSGAN)
+[x] Wassertein GAN(WGAN)
+[x] Wassertein GAN with Gradient Penalty()
+[ ] Energy GAN
+[ ] Evolutionary GAN
 
 # Training command
 CUDA_VISIBLE_DEVICES=1 python main.py -type "WGAN" -epochs 100 -is_cuda True -lr 5e-6
